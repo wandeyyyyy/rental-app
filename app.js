@@ -1,5 +1,6 @@
 const Joi = require('joi');
 Joi.objectId = require('joi-objectid')(Joi);
+const config = require('config');
 
 
 
@@ -19,6 +20,12 @@ const authRouter = require('./route/auth')
 mongoose.connect('mongodb://127.0.0.1:27017/movieapp')
 .then(() => console.log('Connected to MongoDB...'))
 .catch(err => console.log('Cannot Connect to MongoDB...', err))
+
+if (!config.get('jwtPrivateKey')) {
+    console.error('FATAL ERROR: jwtPrivateKey is not defined.');
+    process.exit(1);
+}
+    
 
 
 app.use(express.json());

@@ -3,24 +3,29 @@ const express = require('express');
 const router = express.Router();
 const _ = require('lodash');
 const bcrypt = require('bcrypt');
+const auth = require('../middleware/auth');
 
 
 
-
-
-router.get('/' , async (req,res) =>{ 
-
-    const user = await User.find().sort('name')
+router.get('/me', auth, async (req, res) => {
+    const user = await User.findById(req.user._id).select('-password');
     res.send(user)
-})
+    })
+    
+
+// router.get('/' , async (req,res) =>{ 
+
+//     const user = await User.find().sort('name')
+//     res.send(user)
+// })
 
 
-// to get a user using id
-router.get('/:id', async (req,res) => {
- let user = await User.findById(req.params.id)
-    if (!user) return res.status(404).send("the user with the id not found");
-    res.send(user)
-})
+// // to get a user using id
+// router.get('/:id', async (req,res) => {
+//  let user = await User.findById(req.params.id)
+//     if (!user) return res.status(404).send("the user with the id not found");
+//     res.send(user)
+// })
 
 
 //  for a new user
@@ -45,7 +50,8 @@ router.post('/', async(req,res) => {
 user.password = await bcrypt.hash(user.password, salt)
 
     await user.save()
-    res.send(_.pick(user,['_id','name','email']));
+    const token = user.generateAuthToken();
+    res.header('x-auth-token', token).send(_.pick(user, ['_id', 'name', 'email']));
  
 })
 

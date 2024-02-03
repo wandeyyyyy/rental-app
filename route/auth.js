@@ -6,14 +6,16 @@ const _ = require('lodash');
 const bcrypt = require('bcrypt');
 
 
-//  for a authenticating user
+
+
+//  for  authenticating user
 router.post('/', async(req,res) => {
     const {error} = validate(req.body)
       
     if(error) return res.status(400).send(error.details[0].message);
 
     let user = await User.findOne({ email: req.body.email });
-    if (!user) return res.status(400).send('UInvalid email or password');
+    if (!user) return res.status(400).send('Invalid email or password');
     // user = new User({
     // name: req.body.name,
     // email: req.body.email,
@@ -33,7 +35,9 @@ router.post('/', async(req,res) => {
 
 const validPassword = await bcrypt.compare(req.body.password, user.password);
 if (!validPassword) return res.status(400).send('Invalid email or password.');
-res.send(true);
+await user.save();
+const token = user.generateAuthToken();
+res.send(token);
  
 })
 
